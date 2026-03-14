@@ -1,0 +1,41 @@
+# ------------------------------------------------------------
+# Generic Docker Compose configuration
+#
+# This file runs a development container based on the IMAGE
+# variable passed by the Makefile.
+#
+# Example images:
+#   learn-rust
+#   learn-go
+#   learn-python
+# ------------------------------------------------------------
+
+services:
+  dev:
+    image: ${IMAGE:-learn-dev-base}
+
+    # Container name also injected from Makefile
+    container_name: ${CONTAINER:-dev-container}
+
+    # Mount local projects folder into the container
+    volumes:
+      - ./projects:/workspace
+
+      # Persistent home directory (shell history, configs, etc)
+      - dev-home:/home/dev
+
+    working_dir: /workspace
+
+    # Keep container running for interactive development
+    command: sleep infinity
+
+    # Common development ports
+    ports:
+      - "3000-3010:3000-3010"
+      - "8000-8010:8000-8010"
+
+    stdin_open: true
+    tty: true
+
+volumes:
+  dev-home:
