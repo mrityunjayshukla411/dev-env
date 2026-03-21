@@ -1,3 +1,4 @@
 [submodule "projects/cpp23-playground/cpp-stl-tut"]
 	path = projects/cpp23-playground/cpp-stl-tut
-	url = https://github.com/mrityunjayshukla411/dev-env.git
+	url = git@github.com:mrityunjayshukla411/cpp-stl-tut.git 
+  branch = main
