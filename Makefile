@@ -6,6 +6,7 @@
 # make rust
 # make go
 # make python
+# make cpp23
 #
 # ------------------------------------------------------------
 
@@ -31,6 +32,8 @@ build-go: build-base
 build-python: build-base
 	docker build -t learn-python -f languages/python.Dockerfile .
 
+build-cpp23: build-base
+	docker build -t learn-cpp23 -f languages/cpp23.Dockerfile .
 # ------------------------------------------------------------
 # Start environments
 # ------------------------------------------------------------
@@ -44,6 +47,8 @@ go: build-go
 python: build-python
 	IMAGE=learn-python CONTAINER=python-dev docker compose up -d
 
+cpp23: build-cpp23
+	IMAGE=learn-cpp23 CONTAINER=cpp23-dev docker compose up -d
 # ------------------------------------------------------------
 # Enter running container
 # ------------------------------------------------------------
