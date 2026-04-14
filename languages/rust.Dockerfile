@@ -14,3 +14,6 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 
 # Add Cargo binaries to PATH
 ENV PATH="/home/dev/.cargo/bin:${PATH}"
+
+# Pretty terminal
+ENV TERM=xterm-256color

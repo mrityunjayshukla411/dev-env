@@ -2,3 +2,7 @@
 	path = projects/cpp23-playground/cpp-stl-tut
 	url = git@github.com:mrityunjayshukla411/cpp-stl-tut.git 
   branch = main
+[submodule "projects/llvm-playground/llvm-kaleidoscope"]
+	path = projects/llvm-playground/llvm-kaleidoscope
+	url = git@github.com:mrityunjayshukla411/llvm-kaleidoscope.git
+  branch = main

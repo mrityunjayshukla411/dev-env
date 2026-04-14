@@ -17,4 +17,7 @@ RUN echo "source /usr/share/bash-completion/bash_completion" >> /home/ubuntu/.ba
 
 ENV PATH="/usr/local/go/bin:${PATH}"
 
+# Pretty terminal
+ENV TERM=xterm-256color
+
 USER ubuntu

@@ -49,6 +49,9 @@ python: build-python
 
 cpp23: build-cpp23
 	IMAGE=learn-cpp23 CONTAINER=cpp23-dev docker compose up -d
+
+llvm: build-cpp23
+	IMAGE=learn-cpp23 CONTAINER=llvm-dev docker compose up -d
 # ------------------------------------------------------------
 # Enter running container
 # ------------------------------------------------------------

@@ -25,10 +25,16 @@ RUN apt-get update && apt-get install -y software-properties-common && \
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 && \
     update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-15 100
 
-# ---- Dev UX (same pattern as your Go setup) ----
+
+# ---- Dev UX ----
+# Pretty terminal
+ENV TERM=xterm-256color
+
 RUN echo "source /usr/share/bash-completion/bash_completion" >> /home/ubuntu/.bashrc && \
     echo "alias ll='ls -alF'" >> /home/ubuntu/.bashrc && \
     echo "alias b='cmake -B build -G Ninja && cmake --build build'" >> /home/ubuntu/.bashrc && \
-    echo "alias r='cmake --build build --target'" >> /home/ubuntu/.bashrc
+    echo "alias r='cmake --build build --target'" >> /home/ubuntu/.bashrc 
+
 
 USER ubuntu
+RUN echo 'colorscheme murphy' >> /home/ubuntu/.vimrc
