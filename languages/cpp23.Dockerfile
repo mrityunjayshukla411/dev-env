@@ -6,6 +6,7 @@
 # ------------------------------------------------------------
 
 FROM learn-dev-base
+ARG USERNAME=dev
 
 USER root
 
@@ -36,5 +37,5 @@ RUN echo "source /usr/share/bash-completion/bash_completion" >> /home/ubuntu/.ba
     echo "alias r='cmake --build build --target'" >> /home/ubuntu/.bashrc 
 
 
-USER ubuntu
+USER $USERNAME
 RUN echo 'colorscheme murphy' >> /home/ubuntu/.vimrc

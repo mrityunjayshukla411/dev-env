@@ -6,8 +6,9 @@
 # ------------------------------------------------------------
 
 FROM learn-dev-base
+ARG USERNAME=dev
 
-USER ubuntu
+USER $USERNAME
 
 # Install Rust toolchain
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -17,3 +18,4 @@ ENV PATH="/home/dev/.cargo/bin:${PATH}"
 
 # Pretty terminal
 ENV TERM=xterm-256color
+

@@ -15,10 +15,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install common development utilities
 RUN apt-get update && apt-get install -y     git     curl     wget     vim     nano     build-essential     sudo     tmux     htop     tree     unzip	ca-certificates     bash-completion && rm -rf /var/lib/apt/lists/*
 
+ARG UID=1000
+ARG GID=1000
+ARG USERNAME=dev
 
-RUN echo "ubuntu ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+RUN groupadd -g $GID $USERNAME && \
+    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
-USER ubuntu
+USER $USERNAME
 
 # Workspace directory where projects will be mounted
 WORKDIR /workspace

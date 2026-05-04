@@ -5,6 +5,7 @@
 # ------------------------------------------------------------
 
 FROM learn-dev-base
+ARG USERNAME=dev
 
 USER root
 
@@ -20,4 +21,4 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 # Pretty terminal
 ENV TERM=xterm-256color
 
-USER ubuntu
+USER $USERNAME
