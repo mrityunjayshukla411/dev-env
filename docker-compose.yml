@@ -37,7 +37,12 @@ services:
     stdin_open: true
     tty: true
 
+  dev-gpu:
+    extends: dev
+    profiles: ["gpu"]
     gpus: all
+    container_name: ${CONTAINER:-dev-container}-gpu
+
 
 volumes:
   dev-home:

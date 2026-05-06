@@ -19,8 +19,19 @@ ARG UID=1000
 ARG GID=1000
 ARG USERNAME=dev
 
-RUN groupadd -g $GID $USERNAME && \
-    useradd -m -u $UID -g $GID -s /bin/bash $USERNAME && \
+# Check whether a user of group exists with UID and GID
+# If yes then take the necessary steps
+RUN set -eux; \
+    if id -u $UID >/dev/null 2>&1; then \
+        EXISTING_USER=$(getent passwd $UID | cut -d: -f1); \
+        usermod -l $USERNAME $EXISTING_USER; \
+        groupmod -n $USERNAME $(getent group $GID | cut -d: -f1); \
+    else \
+        if ! getent group $GID >/dev/null 2>&1; then \
+            groupadd -g $GID $USERNAME; \
+        fi; \
+        useradd -m -u $UID -g $GID -s /bin/bash $USERNAME; \
+    fi; \
     echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 USER $USERNAME

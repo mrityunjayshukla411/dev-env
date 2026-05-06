@@ -8,6 +8,15 @@ BASE_IMAGE = learn-dev-base
 UID := $(shell id -u)
 GID := $(shell id -g)
 
+# Automatically detect if GPU device is available or not
+GPU_AVAILABLE := $(shell nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | grep -q . && echo 1 || echo 0)
+
+COMPOSE_CMD = docker compose
+ifeq ($(GPU_AVAILABLE),1)
+	COMPOSE_CMD = docker compose --profile gpu
+endif
+
+
 # ------------------------------------------------------------
 # Build base development image
 # ------------------------------------------------------------
@@ -56,19 +65,19 @@ build-cpp23: build-base
 # ------------------------------------------------------------
 
 rust: build-rust
-	UID=$(UID) GID=$(GID) IMAGE=learn-rust CONTAINER=rust-dev docker compose up -d
+	UID=$(UID) GID=$(GID) IMAGE=learn-rust CONTAINER=rust-dev $(COMPOSE_CMD) up -d
 
 go: build-go
-	UID=$(UID) GID=$(GID) IMAGE=learn-go CONTAINER=go-dev docker compose up -d
+	UID=$(UID) GID=$(GID) IMAGE=learn-go CONTAINER=go-dev $(COMPOSE_CMD) up -d
 
 python: build-python
-	UID=$(UID) GID=$(GID) IMAGE=learn-python CONTAINER=python-dev docker compose up -d
+	UID=$(UID) GID=$(GID) IMAGE=learn-python CONTAINER=python-dev $(COMPOSE_CMD) up -d
 
 cpp23: build-cpp23
-	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=cpp23-dev docker compose up -d
+	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=cpp23-dev $(COMPOSE_CMD) up -d
 
 llvm: build-cpp23
-	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=llvm-dev docker compose up -d
+	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=llvm-dev $(COMPOSE_CMD) up -d
 
 # ------------------------------------------------------------
 # Enter running container
@@ -82,4 +91,4 @@ shell:
 # ------------------------------------------------------------
 
 stop:
-	docker compose down
+	$(COMPOSE_CMD) down
