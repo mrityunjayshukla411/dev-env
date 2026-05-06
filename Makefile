@@ -8,13 +8,20 @@ BASE_IMAGE = learn-dev-base
 UID := $(shell id -u)
 GID := $(shell id -g)
 
-# Automatically detect if GPU device is available or not
-GPU_AVAILABLE := $(shell nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | grep -q . && echo 1 || echo 0)
+# Automatically detect if GPU device and its corresponding 
+# docker runtime is available or not
+GPU_AVAILABLE := $(shell \
+	docker info 2>/dev/null | grep -qi nvidia && \
+	nvidia-smi -L 2>/dev/null | grep -q "GPU" && \
+	echo 1 || echo 0)
 
-COMPOSE_CMD = docker compose
 ifeq ($(GPU_AVAILABLE),1)
-	COMPOSE_CMD = docker compose --profile gpu
+COMPOSE_FILES := -f docker-compose.yml -f docker-compose.gpu.yml
+else
+COMPOSE_FILES := -f docker-compose.yml
 endif
+
+COMPOSE = UID=$(UID) GID=$(GID) docker compose $(COMPOSE_FILES)
 
 
 # ------------------------------------------------------------
@@ -65,19 +72,19 @@ build-cpp23: build-base
 # ------------------------------------------------------------
 
 rust: build-rust
-	UID=$(UID) GID=$(GID) IMAGE=learn-rust CONTAINER=rust-dev $(COMPOSE_CMD) up -d
+	IMAGE=learn-rust CONTAINER=rust-dev $(COMPOSE) up -d --remove-orphans
 
 go: build-go
-	UID=$(UID) GID=$(GID) IMAGE=learn-go CONTAINER=go-dev $(COMPOSE_CMD) up -d
+	IMAGE=learn-go CONTAINER=go-dev $(COMPOSE) up -d --remove-orphans
 
 python: build-python
-	UID=$(UID) GID=$(GID) IMAGE=learn-python CONTAINER=python-dev $(COMPOSE_CMD) up -d
+	IMAGE=learn-python CONTAINER=python-dev $(COMPOSE) up -d --remove-orphans
 
 cpp23: build-cpp23
-	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=cpp23-dev $(COMPOSE_CMD) up -d
+	IMAGE=learn-cpp23 CONTAINER=cpp23-dev $(COMPOSE) up -d --remove-orphans
 
 llvm: build-cpp23
-	UID=$(UID) GID=$(GID) IMAGE=learn-cpp23 CONTAINER=llvm-dev $(COMPOSE_CMD) up -d
+	IMAGE=learn-cpp23 CONTAINER=llvm-dev $(COMPOSE) up -d --remove-orphans
 
 # ------------------------------------------------------------
 # Enter running container
@@ -91,4 +98,4 @@ shell:
 # ------------------------------------------------------------
 
 stop:
-	$(COMPOSE_CMD) down
+	docker compose down
