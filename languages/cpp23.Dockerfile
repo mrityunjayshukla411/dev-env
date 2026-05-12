@@ -31,11 +31,11 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-15 100 && \
 # Pretty terminal
 ENV TERM=xterm-256color
 
-RUN echo "source /usr/share/bash-completion/bash_completion" >> /home/ubuntu/.bashrc && \
-    echo "alias ll='ls -alF'" >> /home/ubuntu/.bashrc && \
-    echo "alias b='cmake -B build -G Ninja && cmake --build build'" >> /home/ubuntu/.bashrc && \
-    echo "alias r='cmake --build build --target'" >> /home/ubuntu/.bashrc 
+RUN echo "source /usr/share/bash-completion/bash_completion" >> /home/$USERNAME/.bashrc && \
+    echo "alias ll='ls -alF'" >> /home/$USERNAME/.bashrc && \
+    echo "alias b='cmake -B build -G Ninja && cmake --build build'" >> /home/$USERNAME/.bashrc && \
+    echo "alias r='cmake --build build --target'" >> /home/$USERNAME/.bashrc 
 
 
 USER $USERNAME
-RUN echo 'colorscheme murphy' >> /home/ubuntu/.vimrc
+RUN echo 'colorscheme murphy' >> /home/$USERNAME/.vimrc
