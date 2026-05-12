@@ -24,7 +24,7 @@ ARG USERNAME=dev
 RUN set -eux; \
     if id -u $UID >/dev/null 2>&1; then \
         EXISTING_USER=$(getent passwd $UID | cut -d: -f1); \
-        usermod -l $USERNAME $EXISTING_USER; \
+        usermod -l $USERNAME -d /home/$USERNAME -m $EXISTING_USER; \
         groupmod -n $USERNAME $(getent group $GID | cut -d: -f1); \
     else \
         if ! getent group $GID >/dev/null 2>&1; then \

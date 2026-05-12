@@ -4,9 +4,10 @@
 
 BASE_IMAGE = learn-dev-base
 
-# Automatically detect host UID/GID
+# Automatically detect host UID/GID and username
 UID := $(shell id -u)
 GID := $(shell id -g)
+USER_SUFFIX := $(shell whoami)
 
 # Automatically detect if GPU device and its corresponding 
 # docker runtime is available or not
@@ -21,7 +22,14 @@ else
 COMPOSE_FILES := -f docker-compose.yml
 endif
 
-COMPOSE = UID=$(UID) GID=$(GID) docker compose $(COMPOSE_FILES)
+COMPOSE = UID=$(UID) GID=$(GID) USER_SUFFIX=$(USER_SUFFIX) docker compose $(COMPOSE_FILES)
+
+# Pass NO_CACHE=1 to disable the build cache: make cpp23 NO_CACHE=1
+ifdef NO_CACHE
+CACHE_FLAG := --no-cache
+else
+CACHE_FLAG :=
+endif
 
 
 # ------------------------------------------------------------
@@ -32,6 +40,7 @@ build-base:
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
 		-t $(BASE_IMAGE) \
 		-f Dockerfile.base .
 
@@ -43,6 +52,7 @@ build-rust: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
 		-t learn-rust \
 		-f languages/rust.Dockerfile .
 
@@ -50,6 +60,7 @@ build-go: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
 		-t learn-go \
 		-f languages/go.Dockerfile .
 
@@ -57,6 +68,7 @@ build-python: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
 		-t learn-python \
 		-f languages/python.Dockerfile .
 
@@ -64,6 +76,7 @@ build-cpp23: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
 		-t learn-cpp23 \
 		-f languages/cpp23.Dockerfile .
 
@@ -72,26 +85,26 @@ build-cpp23: build-base
 # ------------------------------------------------------------
 
 rust: build-rust
-	IMAGE=learn-rust CONTAINER=rust-dev $(COMPOSE) up -d --remove-orphans
+	IMAGE=learn-rust CONTAINER=rust-dev-$(USER_SUFFIX) $(COMPOSE) up -d --remove-orphans
 
 go: build-go
-	IMAGE=learn-go CONTAINER=go-dev $(COMPOSE) up -d --remove-orphans
+	IMAGE=learn-go CONTAINER=go-dev-$(USER_SUFFIX) $(COMPOSE) up -d --remove-orphans
 
 python: build-python
-	IMAGE=learn-python CONTAINER=python-dev $(COMPOSE) up -d --remove-orphans
+	IMAGE=learn-python CONTAINER=python-dev-$(USER_SUFFIX) $(COMPOSE) up -d --remove-orphans
 
 cpp23: build-cpp23
-	IMAGE=learn-cpp23 CONTAINER=cpp23-dev $(COMPOSE) up -d --remove-orphans
+	IMAGE=learn-cpp23 CONTAINER=cpp23-dev-$(USER_SUFFIX) $(COMPOSE) up -d --remove-orphans
 
 llvm: build-cpp23
-	IMAGE=learn-cpp23 CONTAINER=llvm-dev $(COMPOSE) up -d --remove-orphans
+	IMAGE=learn-cpp23 CONTAINER=llvm-dev-$(USER_SUFFIX) $(COMPOSE) up -d --remove-orphans
 
 # ------------------------------------------------------------
 # Enter running container
 # ------------------------------------------------------------
 
 shell:
-	docker exec -it $$(docker ps -q --filter name=dev) bash
+	docker exec -it $$(docker ps -q --filter name=-dev-$(USER_SUFFIX)) bash
 
 # ------------------------------------------------------------
 # Stop containers
