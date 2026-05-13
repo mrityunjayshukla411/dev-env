@@ -17,12 +17,8 @@ services:
     # Container name also injected from Makefile
     container_name: ${CONTAINER:-dev-container}
 
-    # Mount local projects folder into the container
     volumes:
       - ./projects:/workspace
-
-      # Per-user, per-environment persistent home directory
-      - dev-home-${USER_SUFFIX:-default}-${ENV_NAME:-default}:/home/dev
 
     working_dir: /workspace
 
@@ -31,6 +27,3 @@ services:
 
     stdin_open: true
     tty: true
-
-volumes:
-  dev-home-${USER_SUFFIX:-default}-${ENV_NAME:-default}:
