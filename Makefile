@@ -91,30 +91,35 @@ rust: build-rust
 	IMAGE=learn-rust \
 	CONTAINER=rust-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=rust-$(USER_SUFFIX) \
+	ENV_NAME=rust \
 	$(COMPOSE) up -d --remove-orphans
 
 go: build-go
 	IMAGE=learn-go \
 	CONTAINER=go-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=go-$(USER_SUFFIX) \
+	ENV_NAME=go \
 	$(COMPOSE) up -d --remove-orphans
 
 python: build-python
 	IMAGE=learn-python \
 	CONTAINER=python-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=python-$(USER_SUFFIX) \
+	ENV_NAME=python \
 	$(COMPOSE) up -d --remove-orphans
 
 cpp23: build-cpp23
 	IMAGE=learn-cpp23 \
 	CONTAINER=cpp23-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=cpp23-$(USER_SUFFIX) \
+	ENV_NAME=cpp23 \
 	$(COMPOSE) up -d --remove-orphans
 
 llvm: build-cpp23
 	IMAGE=learn-cpp23 \
 	CONTAINER=llvm-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=llvm-$(USER_SUFFIX) \
+	ENV_NAME=llvm \
 	$(COMPOSE) up -d --remove-orphans
 
 # //===--------------------------------------------------------------------===//

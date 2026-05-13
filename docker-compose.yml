@@ -21,8 +21,8 @@ services:
     volumes:
       - ./projects:/workspace
 
-      # Per-user persistent home directory (shell history, configs, etc)
-      - ./home/${USER_SUFFIX:-default}:/home/dev
+      # Per-user, per-environment persistent home directory
+      - dev-home-${USER_SUFFIX:-default}-${ENV_NAME:-default}:/home/dev
 
     working_dir: /workspace
 
@@ -31,3 +31,6 @@ services:
 
     stdin_open: true
     tty: true
+
+volumes:
+  dev-home-${USER_SUFFIX:-default}-${ENV_NAME:-default}:
