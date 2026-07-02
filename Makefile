@@ -83,6 +83,14 @@ build-cpp23: build-base
 		-t learn-cpp23 \
 		-f languages/cpp23.Dockerfile .
 
+build-llvm: build-base
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		$(CACHE_FLAG) \
+		-t learn-llvm \
+		-f languages/llvm.Dockerfile .
+
 # //===--------------------------------------------------------------------===//
 # Start environments
 # //===--------------------------------------------------------------------===//
@@ -115,8 +123,8 @@ cpp23: build-cpp23
 	ENV_NAME=cpp23 \
 	$(COMPOSE) up -d --remove-orphans
 
-llvm: build-cpp23
-	IMAGE=learn-cpp23 \
+llvm: build-llvm
+	IMAGE=learn-llvm \
 	CONTAINER=llvm-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=llvm-$(USER_SUFFIX) \
 	ENV_NAME=llvm \
