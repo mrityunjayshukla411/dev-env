@@ -5,7 +5,10 @@
 # rustup (official installer).
 # ------------------------------------------------------------
 
-FROM learn-dev-base
+# Base image to extend. Override at build time, e.g.:
+#   docker build --build-arg BASE_IMAGE=learn-dev-base:custom ...
+ARG BASE_IMAGE=learn-dev-base
+FROM ${BASE_IMAGE}
 ARG USERNAME=dev
 
 USER $USERNAME

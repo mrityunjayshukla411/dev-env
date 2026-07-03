@@ -1,5 +1,5 @@
 # ------------------------------------------------------------
-# Base Development Image (Ubuntu 24.04)
+# Base Development Image (Ubuntu)
 #
 # This image contains only general development tools that are
 # useful regardless of programming language.
@@ -7,7 +7,10 @@
 # Language specific Dockerfiles will extend this image.
 # ------------------------------------------------------------
 
-FROM ubuntu:24.04
+# Ubuntu release to build from. Override at build time, e.g.:
+#   docker build --build-arg UBUNTU_IMAGE=ubuntu:22.04 ...
+ARG UBUNTU_IMAGE=ubuntu:24.04
+FROM ${UBUNTU_IMAGE}
 
 # Disable interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive

@@ -4,6 +4,15 @@
 
 BASE_IMAGE = learn-dev-base
 
+# Ubuntu release the base image is built from. Override on the command line, e.g.:
+#   make build-base UBUNTU_IMAGE=ubuntu:22.04
+UBUNTU_IMAGE ?= ubuntu:24.04
+
+# CUDA-flavored base image, used by cuda-runtime. Override on the command line, e.g.:
+#   make build-base-cuda CUDA_IMAGE=nvidia/cuda:13.3.0-runtime-ubuntu22.04
+CUDA_IMAGE ?= nvidia/cuda:13.3.0-devel-ubuntu24.04
+CUDA_BASE_IMAGE = learn-dev-base-cuda
+
 # Automatically detect host UID/GID and username
 UID := $(shell id -u)
 GID := $(shell id -g)
@@ -43,8 +52,21 @@ build-base:
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg UBUNTU_IMAGE=$(UBUNTU_IMAGE) \
 		$(CACHE_FLAG) \
 		-t $(BASE_IMAGE) \
+		-f Dockerfile.base .
+
+# Same base image, but layered on top of the CUDA runtime image instead
+# of plain Ubuntu. Reuses Dockerfile.base since the CUDA runtime image
+# is itself Ubuntu + apt-installable CUDA libraries.
+build-base-cuda:
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg UBUNTU_IMAGE=$(CUDA_IMAGE) \
+		$(CACHE_FLAG) \
+		-t $(CUDA_BASE_IMAGE) \
 		-f Dockerfile.base .
 
 # //===--------------------------------------------------------------------===//
@@ -55,6 +77,7 @@ build-rust: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-rust \
 		-f languages/rust.Dockerfile .
@@ -63,6 +86,7 @@ build-go: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-go \
 		-f languages/go.Dockerfile .
@@ -71,6 +95,7 @@ build-python: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-python \
 		-f languages/python.Dockerfile .
@@ -79,6 +104,7 @@ build-cpp23: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-cpp23 \
 		-f languages/cpp23.Dockerfile .
@@ -87,9 +113,19 @@ build-llvm: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-llvm \
 		-f languages/llvm.Dockerfile .
+
+build-cuda-runtime: build-base-cuda
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(CUDA_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-cuda-runtime \
+		-f languages/cuda-runtime.Dockerfile .
 
 # //===--------------------------------------------------------------------===//
 # Start environments
@@ -128,6 +164,13 @@ llvm: build-llvm
 	CONTAINER=llvm-dev-$(USER_SUFFIX) \
 	COMPOSE_PROJECT_NAME=llvm-$(USER_SUFFIX) \
 	ENV_NAME=llvm \
+	$(COMPOSE) up -d --remove-orphans
+
+cuda-runtime: build-cuda-runtime
+	IMAGE=learn-cuda-runtime \
+	CONTAINER=cuda-runtime-dev-$(USER_SUFFIX) \
+	COMPOSE_PROJECT_NAME=cuda-runtime-$(USER_SUFFIX) \
+	ENV_NAME=cuda-runtime \
 	$(COMPOSE) up -d --remove-orphans
 
 # //===--------------------------------------------------------------------===//
