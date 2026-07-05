@@ -1,0 +1,7 @@
+# Runtime grant for the perf capability (see capabilities/perf.Dockerfile).
+# PERFMON alone is enough for most counter-based profiling; kernel-side
+# symbol resolution is governed by the host's perf_event_paranoid sysctl.
+services:
+  dev:
+    cap_add:
+      - PERFMON

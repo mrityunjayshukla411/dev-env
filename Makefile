@@ -18,6 +18,10 @@ UID := $(shell id -u)
 GID := $(shell id -g)
 USER_SUFFIX := $(shell whoami)
 
+# Host kernel release, used by the perf capability to install a
+# matching linux-tools package (see capabilities/perf.Dockerfile)
+KERNEL_RELEASE := $(shell uname -r)
+
 # Automatically detect if GPU device and its corresponding 
 # docker runtime is available or not
 GPU_AVAILABLE := $(shell \
@@ -41,6 +45,28 @@ ifdef NO_CACHE
 CACHE_FLAG := --no-cache
 else
 CACHE_FLAG :=
+endif
+
+# //===--------------------------------------------------------------------===//
+# Capabilities
+#
+# Optional, composable units layered on top of a base image (has-a,
+# not is-a) — any environment can opt in without the language
+# Dockerfiles knowing about it. Pass WITH_<CAPABILITY>=1 to enable,
+# e.g.: make cpp23 WITH_PERF=1
+# //===--------------------------------------------------------------------===//
+
+ifdef WITH_PERF
+LANG_BASE_DEP := build-capability-perf
+LANG_BASE_IMAGE := $(BASE_IMAGE)-perf
+CUDA_LANG_BASE_DEP := build-capability-perf-cuda
+CUDA_LANG_BASE_IMAGE := $(CUDA_BASE_IMAGE)-perf
+COMPOSE_FILES += -f docker-compose.perf.yml
+else
+LANG_BASE_DEP := build-base
+LANG_BASE_IMAGE := $(BASE_IMAGE)
+CUDA_LANG_BASE_DEP := build-base-cuda
+CUDA_LANG_BASE_IMAGE := $(CUDA_BASE_IMAGE)
 endif
 
 
@@ -70,59 +96,85 @@ build-base-cuda:
 		-f Dockerfile.base .
 
 # //===--------------------------------------------------------------------===//
-# Language specific builds
+# Build capability layers
 # //===--------------------------------------------------------------------===//
 
-build-rust: build-base
+build-capability-perf: build-base
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
 		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
+		--build-arg KERNEL_RELEASE=$(KERNEL_RELEASE) \
 		$(CACHE_FLAG) \
-		-t learn-rust \
-		-f languages/rust.Dockerfile .
+		-t $(BASE_IMAGE)-perf \
+		-f capabilities/perf.Dockerfile .
 
-build-go: build-base
-	docker build \
-		--build-arg UID=$(UID) \
-		--build-arg GID=$(GID) \
-		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
-		$(CACHE_FLAG) \
-		-t learn-go \
-		-f languages/go.Dockerfile .
-
-build-python: build-base
-	docker build \
-		--build-arg UID=$(UID) \
-		--build-arg GID=$(GID) \
-		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
-		$(CACHE_FLAG) \
-		-t learn-python \
-		-f languages/python.Dockerfile .
-
-build-cpp23: build-base
-	docker build \
-		--build-arg UID=$(UID) \
-		--build-arg GID=$(GID) \
-		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
-		$(CACHE_FLAG) \
-		-t learn-cpp23 \
-		-f languages/cpp23.Dockerfile .
-
-build-llvm: build-base
-	docker build \
-		--build-arg UID=$(UID) \
-		--build-arg GID=$(GID) \
-		--build-arg BASE_IMAGE=$(BASE_IMAGE) \
-		$(CACHE_FLAG) \
-		-t learn-llvm \
-		-f languages/llvm.Dockerfile .
-
-build-cuda-runtime: build-base-cuda
+# Same capability, layered on top of the CUDA-flavored base instead —
+# mirrors build-base/build-base-cuda so perf composes over either root.
+build-capability-perf-cuda: build-base-cuda
 	docker build \
 		--build-arg UID=$(UID) \
 		--build-arg GID=$(GID) \
 		--build-arg BASE_IMAGE=$(CUDA_BASE_IMAGE) \
+		--build-arg KERNEL_RELEASE=$(KERNEL_RELEASE) \
+		$(CACHE_FLAG) \
+		-t $(CUDA_BASE_IMAGE)-perf \
+		-f capabilities/perf.Dockerfile .
+
+# //===--------------------------------------------------------------------===//
+# Language specific builds
+# //===--------------------------------------------------------------------===//
+
+build-rust: $(LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(LANG_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-rust \
+		-f languages/rust.Dockerfile .
+
+build-go: $(LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(LANG_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-go \
+		-f languages/go.Dockerfile .
+
+build-python: $(LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(LANG_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-python \
+		-f languages/python.Dockerfile .
+
+build-cpp23: $(LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(LANG_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-cpp23 \
+		-f languages/cpp23.Dockerfile .
+
+build-llvm: $(LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(LANG_BASE_IMAGE) \
+		$(CACHE_FLAG) \
+		-t learn-llvm \
+		-f languages/llvm.Dockerfile .
+
+build-cuda-runtime: $(CUDA_LANG_BASE_DEP)
+	docker build \
+		--build-arg UID=$(UID) \
+		--build-arg GID=$(GID) \
+		--build-arg BASE_IMAGE=$(CUDA_LANG_BASE_IMAGE) \
 		$(CACHE_FLAG) \
 		-t learn-cuda-runtime \
 		-f languages/cuda-runtime.Dockerfile .
